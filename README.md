@@ -1,6 +1,6 @@
 # Role Radar
 
-A live internship finder built for the TinyFish × TechnoJam bounty. Search is powered by TinyFish Search, pages are read with TinyFish Fetch, and the optional deep scan uses TinyFish Agent to navigate a careers page. Internship results are ranked against your role, location, and keywords, deduplicated by URL, and linked to their original source.
+A live internship finder built for the TinyFish × TechnoJam bounty. Search is powered by TinyFish Search, pages are read with TinyFish Fetch, and each search automatically uses TinyFish Agent to inspect one discovered careers page in a browser for dynamic listings. Internship results are ranked against your role, location, and keywords, deduplicated by URL, and linked to their original source.
 
 ## Run locally
 
@@ -16,7 +16,7 @@ Requirements: Node.js 18 or later and a TinyFish API key.
 3. Open <http://localhost:3000>.
 4. Sign in with the seeded demo account: user ID `intern-demo`, password `Internship2026!`.
 5. Choose a role, location, and optional comma-separated keywords; select **Find my matches**. The finder only returns internship and co-op roles.
-6. Use **Deep scan** on the result set to invoke TinyFish Agent against a live careers page. Agent is optional because it can consume wallet credits; Search and Fetch are free per TinyFish's current docs.
+6. Each search automatically runs TinyFish Agent on one discovered listing page (preferring Greenhouse, Lever, Workday, or Ashby) to inspect dynamic browser content. This is capped to one Agent run per search and may consume wallet credits. **Scan another** optionally runs Agent on an additional page. Search and Fetch are free per TinyFish's current docs.
 
 The app-local `.env` key takes precedence over a shell key so the verified key is the same one sent on every API request. If you rotate the key, update both the key and its fingerprint in `.env`.
 
@@ -41,7 +41,7 @@ If the clock is tight, preserve the end-to-end Search → Fetch → ranked resul
 
 - **Search** makes three live queries across job portals and ATS/career pages. Query terms include internship, student program, the user's role, location, and keywords.
 - **Fetch** reads up to ten discovered pages and adds page context to each result. The backend merges Search and Fetch output and removes duplicate URLs.
-- **Agent** is an optional, user-triggered scan on a result page. Its goal asks it to inspect visible openings and return structured roles; it is explicitly instructed not to submit applications, forms, or log in.
+- **Agent** automatically opens one discovered careers page per search to inspect dynamic browser content and return structured openings. The scan is capped at one page per search; an optional extra scan is user-triggered. It is explicitly instructed not to submit applications, forms, or log in.
 - The browser talks only to this local Node server. TinyFish credentials remain server-side.
 
 ## Bounty criteria checklist
@@ -72,4 +72,4 @@ Built Role Radar at @TinyFishAI × TechnoJam: live internships matched to your r
 
 - Search snippets are treated as live source data, not guaranteed employer-verified application status. Open the source link to confirm the current details.
 - The scoring is a transparent local heuristic based on the user's inputs; it does not infer qualifications or guarantee fit.
-- Agent is called only when the user clicks **Deep scan**. Its output may vary by site, and a completed run with no structured openings is reported as no openings found.
+- Agent is automatically called once per search when Search found pages; each run may use paid credits. Its output may vary by site, and a completed run with no structured openings leaves the Search/Fetch results intact.

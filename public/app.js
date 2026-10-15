@@ -65,7 +65,7 @@ function showLoading() {
   $('#status-panel').classList.add('hidden'); $('#results-list').classList.add('hidden'); $('#agent-card').classList.add('hidden'); $('#pagination-note').classList.add('hidden'); $('#loading-panel').classList.remove('hidden');
   $('#loading-title').textContent = 'Scanning the live web';
   $('#loading-copy').textContent = 'TinyFish Search is finding current openings across multiple sources.';
-  $('#step-search').classList.add('active'); $('#step-fetch').classList.remove('active'); $('#step-match').classList.remove('active');
+  $('#step-search').classList.add('active'); $('#step-fetch').classList.remove('active'); $('#step-agent').classList.remove('active'); $('#step-match').classList.remove('active');
   $('#search-button').disabled = true; $('#search-button span').textContent = 'Searching live sources…';
 }
 function hideLoading() { $('#loading-panel').classList.add('hidden'); $('#search-button').disabled = false; $('#search-button span').textContent = 'Find my matches'; }
@@ -74,18 +74,23 @@ async function runSearch(event) {
   event?.preventDefault();
   state.tab = 'discover'; state.filter = 'All'; saveState(); showLoading();
   window.setTimeout(() => { $('#step-fetch').classList.add('active'); $('#loading-copy').textContent = 'TinyFish Fetch is reading live pages and collecting useful context.'; }, 900);
-  window.setTimeout(() => { $('#step-match').classList.add('active'); $('#loading-copy').textContent = 'Scoring, filtering, and deduplicating the openings.'; }, 1900);
+  window.setTimeout(() => { $('#step-agent').classList.add('active'); $('#loading-copy').textContent = 'TinyFish Agent is opening one discovered careers page and scraping dynamic listings.'; }, 2200);
   try {
     const response = await fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(prefs()) });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Search failed.');
+    $('#step-match').classList.add('active');
+    $('#loading-copy').textContent = 'Scoring, filtering, and deduplicating the openings.';
     state.all = data.listings || [];
     apiVerified = data.stats?.liveApiData === true;
     $('#api-status').textContent = apiVerified ? 'Live API key verified' : 'Live API not verified';
     $('#api-status-dot').style.background = apiVerified ? '#9adc66' : '#e47c69';
     $('#stat-sources').textContent = data.stats?.sourceCount ?? 0;
     $('#stat-fresh').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    $('#freshness').textContent = `TINYFISH LIVE · ${data.stats?.pagesRead ?? 0} PAGES READ`;
+    $('#freshness').textContent = `TINYFISH LIVE · ${data.stats?.pagesRead ?? 0} FETCHED · ${data.stats?.agentRuns ?? 0} BROWSER SCANS`;
+    $('#agent-summary').textContent = data.stats?.agentRuns
+      ? `Browser Agent scanned one live page and returned ${data.stats.agentOpenings || 0} openings. This Agent run may use paid credits.`
+      : 'The automatic Browser Agent scan did not run because Search found no pages. Agent runs may use paid credits.';
     render();
     if (data.warnings?.length) showToast(`Some sources could not be read: ${data.warnings[0]}`);
     else if (!state.all.length) showToast('No listings found yet. Try broadening your search.');
@@ -131,7 +136,7 @@ $('#agent-button').addEventListener('click', async event => {
   const button = event.currentTarget;
   if (!state.all.length) return;
   button.disabled = true; button.textContent = 'Agent is scanning…';
-  $('#agent-card .agent-copy span').textContent = 'TinyFish Agent is navigating a live listing page. This may take up to a minute.';
+  $('#agent-card .agent-copy span').textContent = 'TinyFish Agent is opening another live listing page. This may take up to a minute and may use paid credits.';
   try {
     const prefsNow = prefs();
     const target = state.all.find(item => /greenhouse|lever|workday/i.test(item.url)) || state.all[0];
@@ -144,6 +149,6 @@ $('#agent-button').addEventListener('click', async event => {
     $('#freshness').textContent = 'AGENT VERIFIED · JUST NOW';
     if (!(data.listings || []).length) showToast('The Agent reached the page but found no structured openings there.');
   } catch (error) { showToast(error.message); }
-  finally { button.disabled = false; button.innerHTML = 'Deep scan <span>↗</span>'; $('#agent-card .agent-copy span').textContent = 'Use TinyFish Agent to navigate a live page and verify openings that Search and Fetch may miss.'; }
+  finally { button.disabled = false; button.innerHTML = 'Scan another <span>↗</span>'; $('#agent-card .agent-copy span').textContent = 'TinyFish Agent automatically scanned one page for this search. You can optionally scan another page; that run may use paid credits.'; }
 });
 render();

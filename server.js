@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const envFileValues = {};
@@ -282,10 +282,31 @@ async function discover(prefs) {
     const match = scoreListing(listing, prefsClean);
     return { ...listing, score: match.score, matchedKeywords: match.matchedKeywords };
   }).filter(Boolean);
+  let agentRuns = 0;
+  let agentOpenings = 0;
+  let agentWarning = '';
+  // Search and Fetch stay the broad, free path. A single capped browser run
+  // then inspects one discovered listing for JavaScript-rendered details.
+  if (sources.length) {
+    const target = sources.find(item => /greenhouse|lever|workday|ashby/i.test(item.url)) || sources[0];
+    try {
+      const scanned = await agentScan({ ...prefsClean, url: target.url, maxOpenings: 8 });
+      agentRuns = 1;
+      agentOpenings = scanned.listings.length;
+      const merged = new Map(listings.map(item => [normalizeUrl(item.url), item]));
+      for (const item of scanned.listings.filter(item => item.type === 'Internship')) {
+        const key = normalizeUrl(item.url);
+        const existing = merged.get(key);
+        if (existing) merged.set(key, { ...existing, ...item, fetched: true, score: Math.max(existing.score, item.score) });
+        else merged.set(key, item);
+      }
+      listings.splice(0, listings.length, ...merged.values());
+    } catch (error) { agentWarning = error.message; }
+  }
   listings.sort((a, b) => b.score - a.score);
   return {
-    listings, stats: { provider: 'TinyFish Search + Fetch', liveApiData: true, searchRequestsSucceeded: successfulSearches, searchedQueries: queries.length, sourcesFound: candidates.length, uniquePages: sources.length, pagesRead: fetched.length, sourceCount: new Set(listings.map(x => x.source)).size },
-    queries, warnings: [...searchErrors, ...(fetchWarning ? [`Fetch: ${fetchWarning}`] : [])]
+    listings, stats: { provider: 'TinyFish Search + Fetch + Browser Agent', liveApiData: true, searchRequestsSucceeded: successfulSearches, searchedQueries: queries.length, sourcesFound: candidates.length, uniquePages: sources.length, pagesRead: fetched.length, agentRuns, agentOpenings, sourceCount: new Set(listings.map(x => x.source)).size },
+    queries, warnings: [...searchErrors, ...(fetchWarning ? [`Fetch: ${fetchWarning}`] : []), ...(agentWarning ? [`Browser Agent: ${agentWarning}`] : [])]
   };
 }
 
@@ -293,10 +314,11 @@ async function agentScan(body) {
   if (!API_KEY || !apiKeyMatchesExpected()) throw Object.assign(new Error('The configured TinyFish API key is missing or failed fingerprint verification.'), { status: 503 });
   const url = clean(body.url, 500);
   if (!/^https:\/\//.test(url)) throw Object.assign(new Error('Choose a valid https listing or careers page first.'), { status: 400 });
-  const goal = `Inspect this career page for currently visible job or internship openings. Do not apply, submit any form, log in, or change anything. Extract only listings genuinely shown on the page. Return JSON with an "openings" array; each item has title, company, location, type (Full-time or Internship), summary, and apply_url. Include the page URL as apply_url if no direct application link is visible. User preferences: role=${clean(body.role, 100)}, location=${clean(body.location, 80)}, seniority=${clean(body.seniority, 40)}, keywords=${clean(body.keywords, 300)}. Return up to 8 relevant listings. If no openings are visible, return an empty array.`;
+  const goal = `Inspect the currently open careers or job-listing page in the browser for visible openings. Capture internship and co-op postings matching these preferences: role=${clean(body.role, 100)}, location=${clean(body.location, 80)}, keywords=${clean(body.keywords, 300)}. Extract only listings actually visible on the page. Do not apply, submit forms, log in, or change anything. For each opening return title, company, location, type, summary, and apply_url. Use the page URL when no direct application link is visible. Return at most ${Math.min(8, Math.max(1, Number(body.maxOpenings) || 8))} openings; return an empty array when none are visible.`;
+  const outputSchema = { type: 'object', properties: { openings: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, company: { type: 'string' }, location: { type: 'string' }, type: { type: 'string' }, summary: { type: 'string' }, apply_url: { type: 'string' } }, required: ['title', 'company', 'location', 'type', 'summary', 'apply_url'] } } }, required: ['openings'] };
   const response = await fetch('https://agent.tinyfish.ai/v1/automation/run-sse', {
     method: 'POST', headers: { 'X-API-Key': API_KEY || '', 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
-    body: JSON.stringify({ url, goal, browser_profile: 'lite' }), signal: AbortSignal.timeout(150_000)
+    body: JSON.stringify({ url, goal, session_id: randomUUID(), output_schema: outputSchema, browser_profile: 'lite' }), signal: AbortSignal.timeout(150_000)
   });
   if (!response.ok) throw Object.assign(new Error(`TinyFish Agent returned ${response.status}: ${(await response.text()).slice(0, 200)}`), { status: response.status });
   const raw = await response.text();
