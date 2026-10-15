@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111312"><meta name="description" content="Sign in to Role Radar and find your next internship.">
+  <title>Sign in — Role Radar</title><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/login.css">
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-story">
+      <a class="login-brand" href="/login"><span class="brand-mark"><i></i><i></i><i></i></span><span>role<span>radar</span></span></a>
+      <div class="story-copy"><div class="eyebrow"><span class="pulse-dot"></span> YOUR INTERNSHIP SEARCH, IN ONE PLACE</div><h1>Make your next<br>move <em>count.</em></h1><p>Find live internship openings matched to your role, your location, and what you want to learn.</p></div>
+      <div class="story-foot"><span>SEARCH LIVE. FIND YOUR FIT.</span><span>POWERED BY TINYFISH ✳</span></div>
+    </section>
+    <section class="login-side">
+      <div class="login-card">
+        <div class="login-kicker">WELCOME TO ROLE RADAR</div>
+        <h2>Sign in to<br><em>find your fit.</em></h2>
+        <p class="login-intro">Use the demo account to explore live internship matches.</p>
+        <form id="login-form">
+          <label for="user-id">Demo user ID</label><div class="login-input"><span>◉</span><input id="user-id" name="userId" type="text" autocomplete="username" value="intern-demo" required></div>
+          <label for="password">Password</label><div class="login-input"><span>⌑</span><input id="password" name="password" type="password" autocomplete="current-password" value="Internship2026!" required><button type="button" id="toggle-password" aria-label="Show password">Show</button></div>
+          <div id="login-error" class="login-error" role="alert" aria-live="polite"></div>
+          <button class="login-submit" id="login-submit" type="submit"><span>Enter Role Radar</span><b>↗</b></button>
+        </form>
+        <div class="seeded-card"><div class="seeded-mark">✳</div><div><strong>Seeded demo account</strong><p><span>User ID</span><code>intern-demo</code><span>Password</span><code>Internship2026!</code></p></div><button id="copy-credentials" type="button" title="Copy demo credentials">⧉</button></div>
+        <div class="login-privacy"><span>◉</span> Demo session · Sign out any time</div>
+      </div>
+      <div class="login-footer"><span>ROLE RADAR <i>×</i> TINYFISH</span><span>LIVE INTERNSHIPS · CLEAR NEXT STEPS</span></div>
+    </section>
+  </main>
+  <script src="/login.js" defer></script>
+</body>
+</html>

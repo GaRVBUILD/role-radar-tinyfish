@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111312"><meta name="description" content="A live job and internship finder powered by TinyFish Search, Fetch, and Agent.">
+  <title>Role Radar — live opportunities, matched to you</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/"><span class="brand-mark"><i></i><i></i><i></i></span><span>role<span class="brand-muted">radar</span></span></a>
+      <div class="side-label">WORKSPACE</div>
+      <button class="nav-item active" data-tab="discover"><span class="nav-icon">⌕</span> Discover <span class="nav-count" id="nav-count">0</span></button>
+      <button class="nav-item" data-tab="saved"><span class="nav-icon">♡</span> Saved roles <span class="nav-count" id="saved-count">0</span></button>
+      <div class="sidebar-bottom">
+        <div class="tinyfish-card"><div class="tf-orb">✳</div><div><strong>Powered by TinyFish</strong><span id="api-status">Checking live API…</span></div><span class="live-dot" id="api-status-dot" aria-hidden="true"></span></div>
+        <div class="profile"><div class="avatar">R</div><div><strong id="profile-user">Demo user</strong><span>Internship workspace</span></div><button id="reset-prefs" title="Reset preferences">···</button></div>
+      </div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <b id="crumb-current">Discover</b></div><div class="top-actions"><span class="last-updated" id="freshness">LIVE WEB RESULTS</span><button class="icon-button" id="help-button" aria-label="About this app">?</button><button class="icon-button" id="logout-button" aria-label="Sign out" title="Sign out">↪</button></div></header>
+      <section class="content-wrap">
+        <div class="hero-row"><div><div class="eyebrow"><span class="pulse-dot"></span> INTERNSHIPS, FOUND LIVE</div><h1>Find an internship<br><em>that moves you forward.</em></h1><p class="hero-copy">One live search across company career pages and job portals. Internship openings matched to your role, location, and keywords.</p></div>
+          <div class="hero-stats"><div class="hero-stat"><span class="stat-icon">↗</span><div><b id="stat-sources">0</b><small>LIVE SOURCES</small></div></div><div class="hero-stat"><span class="stat-icon">◷</span><div><b id="stat-fresh">NOW</b><small>LAST SEARCHED</small></div></div></div>
+        </div>
+        <div class="search-layout">
+          <section class="panel preferences-panel">
+            <div class="panel-heading"><div><div class="section-kicker">01 / YOUR PREFERENCES</div><h2>Make it yours</h2></div><span class="edit-mark">✳</span></div>
+            <form id="search-form">
+              <label for="role">Role or job title</label><div class="input-wrap"><span>⌕</span><input id="role" name="role" value="Software Engineer" placeholder="e.g. Product Designer" required></div>
+              <div class="field-grid"><div><label for="location">Location</label><div class="input-wrap"><span>⌖</span><input id="location" name="location" value="Bengaluru" placeholder="City or remote"></div></div><div><label for="seniority">Opportunity type</label><div class="select-wrap"><select id="seniority" name="seniority" aria-label="Opportunity type" disabled><option value="Internship" selected>Internships only</option></select><span>⌄</span></div></div></div>
+              <label for="keywords">Keywords <span class="label-optional">OPTIONAL</span></label><div class="input-wrap"><span>#</span><input id="keywords" name="keywords" placeholder="React, Python, remote…"></div><div class="hint">Separate keywords with a comma</div>
+              <button class="primary-button" id="search-button" type="submit"><span>Find my matches</span><b>↗</b></button>
+              <div class="search-note"><span class="secure-icon">◉</span> Preferences stay in this browser</div>
+            </form>
+          </section>
+          <section class="results-column">
+            <div class="results-heading"><div><div class="section-kicker">02 / LIVE INTERNSHIPS</div><h2 id="results-title">Your next internship starts here.</h2><p id="results-subtitle">Set your preferences and we’ll find current internship openings.</p></div><button class="filter-button" id="filter-toggle">☷ <span>Filters</span></button></div>
+            <div class="filter-bar hidden" id="filter-bar"><button class="filter-chip selected" data-filter="All">All internships <span id="count-all">0</span></button><span class="filter-divider"></span><label class="toggle-label"><input id="high-match" type="checkbox"><span class="toggle"></span> 70%+ match</label><select id="sort-select" aria-label="Sort listings"><option value="match">Best match</option><option value="newest">Recently found</option></select></div>
+            <div id="status-panel" class="status-panel"><div class="empty-graphic"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="empty-star">✳</div><div class="mini-card one">↗ &nbsp; Internship fit</div><div class="mini-card two">◎ &nbsp; Live listings</div></div><h3>Your next internship is out there.</h3><p>Tell us your preferred role, location, and keywords. We’ll search live company career pages and job portals for current internships.</p><button class="text-button" id="sample-search">Find internships <span>→</span></button></div>
+            <div id="loading-panel" class="loading-panel hidden"><div class="loader-ring"></div><h3 id="loading-title">Scanning the live web</h3><p id="loading-copy">TinyFish Search is finding current openings across multiple sources.</p><div class="loading-steps"><span class="step active" id="step-search"><i></i> Search</span><span class="step" id="step-fetch"><i></i> Read pages</span><span class="step" id="step-match"><i></i> Match roles</span></div></div>
+            <div id="results-list" class="results-list"></div>
+            <div id="agent-card" class="agent-card hidden"><div class="agent-icon">✳</div><div class="agent-copy"><b>Go deeper on a careers page</b><span>Use TinyFish Agent to navigate a live page and verify openings that Search and Fetch may miss.</span></div><button id="agent-button">Deep scan <span>↗</span></button></div>
+            <div id="pagination-note" class="pagination-note hidden"></div>
+          </section>
+        </div>
+        <section class="how-it-works"><div class="how-title"><div class="section-kicker">THE SIGNAL BEHIND THE SEARCH</div><h2>Three tools. One clear path.</h2><p>TinyFish turns the live web into openings you can actually act on.</p></div><div class="tool-steps"><article><span class="tool-num">01</span><div class="tool-symbol search-symbol">⌕</div><h3>Search</h3><p>Finds live career pages and job portals using your role, location, and keywords.</p><span class="tool-tag">DISCOVER</span></article><div class="step-line"></div><article><span class="tool-num">02</span><div class="tool-symbol fetch-symbol">↳</div><h3>Fetch</h3><p>Reads each page for current context, so results point to real listings, not a hardcoded feed.</p><span class="tool-tag">READ</span></article><div class="step-line"></div><article><span class="tool-num">03</span><div class="tool-symbol agent-symbol">✳</div><h3>Agent</h3><p>Can navigate dynamic careers pages to verify extra openings when you ask for a deeper scan.</p><span class="tool-tag">VERIFY</span></article></div></section>
+        <footer class="footer"><span>ROLE RADAR <i>×</i> TINYFISH</span><span>Fresh listings. Clear next steps.</span><a href="https://agent.tinyfish.ai" target="_blank" rel="noreferrer">BUILT WITH TINYFISH ↗</a></footer>
+      </section>
+    </main>
+  </div>
+  <dialog id="about-dialog"><button class="dialog-close" id="close-dialog">×</button><div class="section-kicker">ABOUT ROLE RADAR</div><h2>Less searching.<br><em>More moving.</em></h2><p>Role Radar uses TinyFish Search to discover live openings, TinyFish Fetch to read those pages, and TinyFish Agent for optional interactive verification. Results are deduplicated, scored against your preferences, and linked to their source for applying.</p><div class="dialog-foot">YOUR PREFERENCES ARE STORED LOCALLY IN THIS BROWSER.</div></dialog>
+  <script src="/app.js" defer></script>
+</body>
+</html>
